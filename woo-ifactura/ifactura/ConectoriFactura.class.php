@@ -42,7 +42,6 @@ class ConectoriFactura
      */  
     public function woo_ifactura_procesarInvoice($order_id)
     {
-        global $woocommerce;
         $totalShipping = 0.0;
         $order = wc_get_order($order_id);
         $ordenExtendida = new WCOrdenExtendida($order_id);
@@ -263,21 +262,21 @@ class ConectoriFactura
                 /** TAXES shipping **/
                 $iva_total = 0;
                 if ($it == 1) { //RESPONSABLE INSCRIPTO
-                    if ($sm['total_tax']==0 && $option_taxes == 'no') {
+                    if ($sm->get_total_tax()==0 && $option_taxes == 'no') {
 
                         $iva = 21;
                         $precio = $sm->get_total();
                         $iva_total = round((floatval($iva) * floatval($precio)) / (100 + floatval($iva)), 2);
                         $total_linea = round($precio - $iva_total, 2);
                     } else {
-                        if ($sm['total_tax']==0) {
+                        if ($sm->get_total_tax()==0) {
                             $iva = 0;
                         } else {
-                            $iva = (($sm['total_tax']*100)/$sm['total']);
+                            $iva = (($sm->get_total_tax()*100)/$sm->get_total());
                         }
                         $precio = $sm->get_total();
-                        $iva_total = round($sm['total_tax'], 2);
-                        $total_linea = round(floatval($sm['total']) + $iva_total, 2);
+                        $iva_total = round($sm->get_total_tax(), 2);
+                        $total_linea = round(floatval($sm->get_total()) + $iva_total, 2);
                     }
                 } else {
                     $iva = 0;
@@ -309,7 +308,6 @@ class ConectoriFactura
     }
     private function procesarFees($fees,&$total)
     {
-        global $woocommerce;
         $order_fees = array();
         if (is_array($fees)) {
             foreach ($fees as $k=>$v) {
@@ -339,7 +337,6 @@ class ConectoriFactura
     }
     private function procesarItems($items,$usoImpuestosWoo,$order,&$total)
     {
-        global $woocommerce;
         $it = $this->configuracion->condicionImpositiva;
         $option_taxes = get_option('woocommerce_calc_taxes');
         $Bienes = array();
@@ -942,7 +939,6 @@ class ConectoriFactura
      */
     protected function armarCliente($order_id)
     {
-        global $woocommerce;
         $ordenExtendida = new WCOrdenExtendida($order_id);
         $order = wc_get_order($order_id);
         $billing_currency   = $order->get_currency();

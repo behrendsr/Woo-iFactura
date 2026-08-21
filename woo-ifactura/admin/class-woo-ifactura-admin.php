@@ -85,7 +85,10 @@ class Woo_iFactura_Admin
     public function enqueue_scripts()
     {
         wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/woo-ifactura-admin.js', array( 'jquery' ), $this->version, false);
-        wp_localize_script($this->plugin_name, 'fyifacturaAdminVars', array('ifacturaUrl' => plugin_dir_url(__FILE__) ));
+        wp_localize_script($this->plugin_name, 'fyifacturaAdminVars', array(
+            'ifacturaUrl' => plugin_dir_url(__FILE__),
+            'nonce'       => wp_create_nonce('woo_ifactura_ajax_nonce'),
+        ));
     }
     
     public function add_settings_tab($settings_tabs)
@@ -804,26 +807,38 @@ class Woo_iFactura_Admin
     *
     **/    
     public function woo_ifactura_invoice()
-    {         
-        $order_id = intval($_POST["order"]);      
-        $iFactura = new ConectoriFactura();  
+    {
+        check_ajax_referer('woo_ifactura_ajax_nonce', 'nonce');
+        if (! current_user_can('manage_woocommerce')) {
+            die(json_encode(array("Exito" => false, "Mensaje" => "No tenés permisos para realizar esta acción.")));
+        }
+        $order_id = intval($_POST["order"]);
+        $iFactura = new ConectoriFactura();
         $respuesta = $iFactura->woo_ifactura_procesarInvoice($order_id);
         die(json_encode($respuesta,JSON_PRETTY_PRINT));
     }
      /**
     * Procesar la petición AJAX para generar la nota de crédito
     *
-    **/    
+    **/
     public function woo_ifactura_cancel_invoice()
-    {         
-        $order_id = intval($_POST["order"]);      
-        $iFactura = new ConectoriFactura();  
+    {
+        check_ajax_referer('woo_ifactura_ajax_nonce', 'nonce');
+        if (! current_user_can('manage_woocommerce')) {
+            die(json_encode(array("Exito" => false, "Mensaje" => "No tenés permisos para realizar esta acción.")));
+        }
+        $order_id = intval($_POST["order"]);
+        $iFactura = new ConectoriFactura();
         $respuesta = $iFactura->woo_ifactura_cancelarInvoice($order_id);
         die(json_encode($respuesta,JSON_PRETTY_PRINT));
     }
     public function woo_ifactura_view_invoice()
     {
-        $order_id = intval($_POST["order"]);        
+        check_ajax_referer('woo_ifactura_ajax_nonce', 'nonce');
+        if (! current_user_can('manage_woocommerce')) {
+            die(json_encode(array("Exito" => false, "Mensaje" => "No tenés permisos para realizar esta acción.")));
+        }
+        $order_id = intval($_POST["order"]);
         $conector = new ConectoriFactura();
         $url = $conector->getUrlInvoiceGenerada($order_id);
         try {
@@ -844,7 +859,11 @@ class Woo_iFactura_Admin
     }
     public function woo_ifactura_view_cancel_invoice()
     {
-        $order_id = intval($_POST["order"]);        
+        check_ajax_referer('woo_ifactura_ajax_nonce', 'nonce');
+        if (! current_user_can('manage_woocommerce')) {
+            die(json_encode(array("Exito" => false, "Mensaje" => "No tenés permisos para realizar esta acción.")));
+        }
+        $order_id = intval($_POST["order"]);
         $conector = new ConectoriFactura();
         $url = $conector->getUrlNotaGenerada($order_id);
         try {
@@ -865,6 +884,10 @@ class Woo_iFactura_Admin
     }
     public function woo_ifactura_view_delete_invoices()
     {
+        check_ajax_referer('woo_ifactura_ajax_nonce', 'nonce');
+        if (! current_user_can('manage_woocommerce')) {
+            die(json_encode(array("Exito" => false, "Mensaje" => "No tenés permisos para realizar esta acción.")));
+        }
         $order_id = intval($_POST["order"]);
         $ordenExtendida = new WCOrdenExtendida($order_id);
         try
