@@ -132,21 +132,24 @@ class Woo_iFactura_Admin
     }
     
     /**
-     * Gets order id in WooCommerce 3.0 and older versions
+     * Gets order id.
+     *
+     * The plugin has required WooCommerce 7.3.0+ since the "WC requires
+     * at least" header was added, so the pre-3.0 $order->id fallback this
+     * used to have was dead code - and worse, the `$woocommerce->version
+     * >= '3.0'` check that guarded it was a *string* comparison, which
+     * evaluates false for any WooCommerce version >= 10.0 (e.g. "11.0.1"
+     * >= "3.0" is false lexically), so on current WooCommerce this method
+     * was silently falling into the deprecated $order->id branch and
+     * triggering a "Order properties should not be accessed directly"
+     * doing_it_wrong notice on every call.
      *
      * @since 0.0.3
      */
-    
     public function get_order_id($order)
     {
-        global $woocommerce;        
-        if ($woocommerce->version >= '3.0') {
-            $order_id = $order->get_id();
-        } else {
-            $order_id = $order->id;
-        }        
-        return $order_id;
-    }    
+        return $order->get_id();
+    }
     /**
     * Adds DNI to register form
     *
@@ -878,6 +881,7 @@ class Woo_iFactura_Admin
     }
     public function woo_ifactura_buttons_column($columns)
     {
+        $new_columns = array();
         foreach ($columns as $column_name => $column_info) {
 
             $new_columns[$column_name] = $column_info;

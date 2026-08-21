@@ -250,7 +250,6 @@ class ConectoriFactura
     }
     private function procesarShipping($shipping_data,&$total)
     {
-        global $woocommerce;
         $it = $this->configuracion->condicionImpositiva;
         $option_taxes = get_option('woocommerce_calc_taxes');
         $shipping_methods = array();
@@ -267,11 +266,7 @@ class ConectoriFactura
                     if ($sm['total_tax']==0 && $option_taxes == 'no') {
 
                         $iva = 21;
-                        if ($woocommerce->version >= "3.0") {
-                            $precio = $sm->get_total();
-                        } else {
-                            $precio  = $sm['item_meta']['cost'][0];
-                        }
+                        $precio = $sm->get_total();
                         $iva_total = round((floatval($iva) * floatval($precio)) / (100 + floatval($iva)), 2);
                         $total_linea = round($precio - $iva_total, 2);
                     } else {
@@ -279,29 +274,17 @@ class ConectoriFactura
                             $iva = 0;
                         } else {
                             $iva = (($sm['total_tax']*100)/$sm['total']);
-                        }                    
-                        if ($woocommerce->version >= "3.0") {
-                            $precio = $sm->get_total();
-                        } else {
-                            $precio  = $sm['item_meta']['cost'][0];
                         }
+                        $precio = $sm->get_total();
                         $iva_total = round($sm['total_tax'], 2);
                         $total_linea = round(floatval($sm['total']) + $iva_total, 2);
                     }
                 } else {
                     $iva = 0;
-                    if ($woocommerce->version >= "3.0") {
-                        $precio = $sm->get_total();
-                    } else {
-                        $precio  = $sm['item_meta']['cost'][0];
-                    }
+                    $precio = $sm->get_total();
                     $total_linea = $precio;
                 }
-                if ($woocommerce->version >= "3.0") {
-                    $shipping_name = $sm->get_name();
-                } else {
-                    $shipping_name = $sm['name'];
-                }
+                $shipping_name = $sm->get_name();
                 if (!empty(floatval($precio))) {
                     $porcentaje_iva = $this->woo_ifactura_alicuotaiva($iva);
                     array_push(
